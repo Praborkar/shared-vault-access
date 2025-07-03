@@ -6,7 +6,7 @@ A secure and role-based file sharing system built using **FastAPI** and **MongoD
 
 ## 👤 Author
 
-**Prashansa Agarwal**
+**Prabor Kar**
 
 ---
 
