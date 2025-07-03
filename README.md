@@ -1,73 +1,102 @@
-# Welcome to your Lovable project
+# 🔐 Shared Vault Access – Secure File Sharing Backend
 
-## Project info
+A secure and role-based file sharing system built using **FastAPI** and **MongoDB Atlas**, designed to allow controlled file upload and secure sharing via encrypted download links and verified user access.
 
-**URL**: https://lovable.dev/projects/0b70d0f8-72a3-49ad-9742-e649d11a8938
+---
 
-## How can I edit this code?
+## 👤 Author
 
-There are several ways of editing your application.
+**Prashansa Agarwal**
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0b70d0f8-72a3-49ad-9742-e649d11a8938) and start prompting.
+## 📌 Specifications
 
-Changes made via Lovable will be committed automatically to this repo.
+### ⚙️ Tech Stack
 
-**Use your preferred IDE**
+| Layer         | Technology               |
+|---------------|--------------------------|
+| **Backend**   | FastAPI (Python 3.10+)    |
+| **Database**  | MongoDB Atlas (NoSQL)     |
+| **Auth**      | JWT (OAuth2 password flow)|
+| **File Storage** | Local filesystem (`/uploads`) |
+| **Email Service** | SMTP-based (configurable) |
+| **Server**    | Uvicorn (ASGI)            |
+| **Testing**   | Pytest                    |
+| **API Testing** | Postman + Swagger UI     |
+| **Containerization** | Docker               |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 👥 User Roles
 
-Follow these steps:
+### 1. **OpsUser**
+- Login with credentials
+- Upload files (only `.pptx`, `.docx`, `.xlsx`)
+- No access to download or list files
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 2. **ClientUser**
+- Sign up (returns an encrypted verification URL)
+- Verify email via token
+- Login to receive JWT
+- List all uploaded files
+- Request secure download link for a file
+- Access download only via authorized encrypted link
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🔐 Authentication & Security
+- JWT-based authentication for both user types
+- Role-based access guards using FastAPI dependencies
+- Passwords hashed with `bcrypt`
+- Encrypted download links (UUID-based with HMAC or Fernet)
+- Links are client-specific and access-controlled
+- Unauthorized attempts result in `403 Forbidden`
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+---
 
-**Edit a file directly in GitHub**
+## 📁 File Handling
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Action | Description |
+|--------|-------------|
+| Upload | Allowed only for OpsUser. Validates file types. |
+| Storage | Files saved under `uploads/` locally. |
+| Download | Secure encrypted token required. Access granted to linked ClientUser only. |
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## ✉️ Email Verification
 
-## What technologies are used for this project?
+- On signup, ClientUser receives a verification email.
+- Verification is done by visiting:  
+  `/client/verify/{token}`
+- Accounts remain inactive until verified.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔧 API Endpoints
 
-## How can I deploy this project?
+| Method | Endpoint | Role | Description |
+|--------|----------|------|-------------|
+| POST   | `/ops/login`         | OpsUser   | Login |
+| POST   | `/ops/upload`        | OpsUser   | Upload `.pptx`, `.docx`, `.xlsx` files |
+| POST   | `/client/signup`     | ClientUser | Signup + send verification token |
+| GET    | `/client/verify/{token}` | ClientUser | Verify email via token |
+| POST   | `/client/login`      | ClientUser | Login |
+| GET    | `/client/files`      | ClientUser | List all uploaded files |
+| GET    | `/client/download/{file_id}` | ClientUser | Generate secure download link |
+| GET    | `/client/download/file/{secure_token}` | ClientUser | Download file securely |
 
-Simply open [Lovable](https://lovable.dev/projects/0b70d0f8-72a3-49ad-9742-e649d11a8938) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## 📬 Environment Variables
 
-Yes, you can!
+Copy `.env.example` to `.env` and update:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```env
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/securefiles
+SECRET_KEY=your_jwt_secret_key
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_email_password
